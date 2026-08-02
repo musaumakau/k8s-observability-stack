@@ -6,11 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/GoogleCloudPlatform/microservices-demo.git
+    repoURL: https://github.com/musaumakau/k8s-observability-stack.git
     targetRevision: main
-    path: release
-    directory:
-      include: "kubernetes-manifests.yaml"
+    path: apps/online-boutique
   destination:
     server: https://kubernetes.default.svc
     namespace: online-boutique
