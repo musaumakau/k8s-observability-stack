@@ -1,37 +1,49 @@
-alloy:
-  configMap:
-    content: |
-      discovery.kubernetes "pods" {
-        role = "pod"
-      }
+deploymentMode: SingleBinary
 
-      discovery.relabel "pods" {
-        targets = discovery.kubernetes.pods.targets
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: filesystem
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
 
-        rule {
-          source_labels = ["__meta_kubernetes_namespace"]
-          target_label  = "namespace"
-        }
-        rule {
-          source_labels = ["__meta_kubernetes_pod_name"]
-          target_label  = "pod"
-        }
-        rule {
-          source_labels = ["__meta_kubernetes_pod_container_name"]
-          target_label  = "container"
-        }
-      }
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 10Gi
 
-      loki.source.kubernetes "pods" {
-        targets    = discovery.relabel.pods.output
-        forward_to = [loki.write.default.receiver]
-      }
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
 
-      loki.write "default" {
-        endpoint {
-          url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
-        }
-      }
+gateway:
+  enabled: false
 
-controller:
-  type: daemonset
+test:
+  enabled: false
+
+lokiCanary:
+  enabled: false
+
+monitoring:
+  selfMonitoring:
+    enabled: false
+  lokiCanary:
+    enabled: false
