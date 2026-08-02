@@ -1,9 +1,17 @@
+crds:
+     enabled: false
+
 grafana:
   enabled: true
   adminPassword: "changeme"  # move to a Vault-sourced secret later -- see gke-vault-secrets patterns
   persistence:
     enabled: true
     size: 5Gi
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki.monitoring.svc.cluster.local:3100
+      access: proxy  
 
 prometheus:
   prometheusSpec:
