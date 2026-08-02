@@ -49,3 +49,27 @@ Hands-on Kubernetes observability project on GKE, deployed GitOps-style via Argo
 - Cluster also runs Google Managed Prometheus (`gmp-system`/`gmp-public`).
   Left untouched intentionally -- different CRDs (`PodMonitoring` vs
   `ServiceMonitor`), no conflict, just don't wire it into Grafana.
+
+## Known issues
+
+- The `loki` StatefulSet shows persistent `OutOfSync` in ArgoCD due to
+  a confirmed upstream bug where the Kubernetes API server injects
+  `creationTimestamp: null` into `spec.volumeClaimTemplates[].metadata`
+  on admission, and ArgoCD's diff engine fails to suppress it via any
+  of the standard mechanisms -- see argoproj/argo-cd#24791, #16707,
+  #11143.
+
+  Tried and ruled out:
+  - `ignoreDifferences` via `jsonPointers` (both wildcard and
+    array-indexed paths)
+  - `ignoreDifferences` via `jqPathExpressions`
+  - Removing `ServerSideApply` from the sync options
+  - Enabling `ServerSideDiff=true` via Application annotation
+  - `managedFieldsManagers` targeting `kube-controller-manager`
+
+  Verified cosmetic only: Loki is `Healthy`, all pods `Running`, and
+  the full log pipeline (Alloy -> Loki -> Grafana) is confirmed
+  working end-to-end. Fix would require either a Loki chart upgrade
+  past `6.24.0` (unverified whether the upstream PR fixing this is
+  merged) or an ArgoCD version bump past `2.13.2` -- deferred as
+  out of scope for a cosmetic sync-status issue.
