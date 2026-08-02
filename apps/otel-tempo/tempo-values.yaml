@@ -1,0 +1,18 @@
+tempo:
+  repository: grafana/tempo
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+tempoQuery:
+  enabled: true
+
+# Accept OTLP directly too (in case Alloy isn't the only sender later)
+tempoConfig:
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
